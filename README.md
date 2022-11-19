@@ -1,3 +1,3 @@
-# Portal Gun
+# Upgrade `knausj`
 
-The awesome Portal Gun
+Automatically do `knausj` upgrade.

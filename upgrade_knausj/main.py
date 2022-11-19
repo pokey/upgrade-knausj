@@ -1,27 +1,11 @@
 import typer
 
-
 app = typer.Typer()
 
 
-@app.callback()
-def callback():
-    """
-    Awesome Portal Gun
-    """
-
-
 @app.command()
-def shoot():
+def main():
     """
-    Shoot the portal gun
+    Upgrade knausj
     """
-    typer.echo("Shooting portal gun")
-
-
-@app.command()
-def load():
-    """
-    Load the portal gun
-    """
-    typer.echo("Loading portal gun")
+    typer.echo("FIXME: do upgrade")
