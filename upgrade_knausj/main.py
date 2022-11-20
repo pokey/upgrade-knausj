@@ -2,13 +2,13 @@ from pathlib import Path
 
 import typer
 
+from upgrade_knausj.ask_for_origin_uri import AskForOriginUri
 from upgrade_knausj.core_command_runner import CoreCommandRunner
 from upgrade_knausj.error_printing_runner import ErrorPrintingRunner
 from upgrade_knausj.repository import Repository
 from upgrade_knausj.stdio.printer import Printer
 from upgrade_knausj.stdio.prompter import Prompter
 from upgrade_knausj.steps.add_remote import AddOrigin, AddUpstream
-from upgrade_knausj.steps.ask_for_origin_uri import AskForOriginUri
 from upgrade_knausj.steps.initialize_repo import InitializeRepo
 
 app = typer.Typer()
