@@ -8,8 +8,8 @@ class Printer:
     def __init__(self):
         self._err_console = Console(stderr=True)
 
-    def error(self, msg):
+    def error(self, msg: str) -> None:
         self._err_console.print(f":x: [bold red]Error[/bold red]: {msg}")
 
-    def info(self, msg):
+    def info(self, msg: str) -> None:
         print(msg)

@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Literal, Union
-from urllib.parse import urlparse
 
 from git.repo import Repo
 
