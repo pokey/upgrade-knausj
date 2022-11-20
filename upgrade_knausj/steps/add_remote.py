@@ -3,7 +3,7 @@ from typing import Callable
 
 from upgrade_knausj.conditions.remote_exists import RemoteExists
 from upgrade_knausj.conditions.repository_exists import RepositoryExists
-from upgrade_knausj.repository import RemoteName, Repository
+from upgrade_knausj.repository import ORIGIN, UPSTREAM, RemoteName, Repository
 from upgrade_knausj.types.step import Step
 
 
@@ -31,7 +31,7 @@ class AddOrigin(AddRemote):
     _uri_getter: Callable[[], str]
 
     def __init__(self, repository: Repository, get_uri: Callable[[], str]):
-        super().__init__(repository, "origin")
+        super().__init__(repository, ORIGIN)
         self._uri_getter = get_uri
 
     def _get_uri(self) -> str:
@@ -43,7 +43,7 @@ class AddUpstream(AddRemote):
     _uri: str
 
     def __init__(self, repository: Repository, upstream_uri: str):
-        super().__init__(repository, "upstream")
+        super().__init__(repository, UPSTREAM)
         self._uri = upstream_uri
 
     def _get_uri(self) -> str:
