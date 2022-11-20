@@ -1,20 +1,20 @@
 from typing import Sequence
 
-import typer
-
-from upgrade_knausj.command_runner import CommandRunner
-from upgrade_knausj.printer import Printer
-from upgrade_knausj.step import Step
+from upgrade_knausj.stdio.printer import Printer
+from upgrade_knausj.types.command_runner import CommandRunner
+from upgrade_knausj.types.step import Step
 
 
-class UnmetPreconditionError(Exception):
+class UnmetConditionError(Exception):
     step_name: str
     message: str
+    condition_type: str
 
-    def __init__(self, step_name, message) -> None:
+    def __init__(self, condition_type: str, step_name: str, message: str) -> None:
         super().__init__(f"Error running '{step_name}':\n{message}")
         self.step_name = step_name
         self.message = message
+        self.condition_type = condition_type
 
 
 class CoreCommandRunner(CommandRunner):
@@ -27,14 +27,20 @@ class CoreCommandRunner(CommandRunner):
 
     def __call__(self) -> None:
         for step in self._steps:
-            if step.postcondition().success:
+            precondition_result = step.precondition()
+            if not precondition_result.success:
+                raise UnmetConditionError(
+                    "precondition", step.name, precondition_result.message
+                )
+
+            if not step.always_run and step.postcondition().success:
                 self._printer.info(f"Already completed step '{step.name}'; skipping")
                 continue
 
-            precondition_result = step.precondition()
-
-            if not precondition_result.success:
-                raise UnmetPreconditionError(step.name, precondition_result.message)
-
             self._printer.info(f"Running '{step.name}'...")
-            step.run()
+            step()
+
+            if not step.postcondition().success:
+                raise UnmetConditionError(
+                    "postcondition", step.name, precondition_result.message
+                )

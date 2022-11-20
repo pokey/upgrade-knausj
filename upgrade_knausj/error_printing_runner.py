@@ -1,6 +1,6 @@
-from upgrade_knausj.command_runner import CommandRunner
-from upgrade_knausj.core_command_runner import UnmetPreconditionError
-from upgrade_knausj.printer import Printer
+from upgrade_knausj.core_command_runner import UnmetConditionError
+from upgrade_knausj.stdio.printer import Printer
+from upgrade_knausj.types.command_runner import CommandRunner
 
 
 class ErrorPrintingRunner(CommandRunner):
@@ -14,7 +14,7 @@ class ErrorPrintingRunner(CommandRunner):
     def __call__(self) -> None:
         try:
             self._runner()
-        except UnmetPreconditionError as err:
+        except UnmetConditionError as err:
             self._printer.error(
-                f"'{err.step_name}' precondition not met:\n  :right_arrow: {err.message}"
+                f"'{err.step_name}' {err.condition_type} not met:\n  :right_arrow: {err.message}"
             )
