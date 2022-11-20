@@ -11,7 +11,7 @@ class UnmetConditionError(Exception):
     condition_type: str
 
     def __init__(self, condition_type: str, step_name: str, message: str) -> None:
-        super().__init__(f"Error running '{step_name}':\n{message}")
+        super().__init__(f"Unmet {condition_type} for '{step_name}':\n{message}")
         self.step_name = step_name
         self.message = message
         self.condition_type = condition_type
