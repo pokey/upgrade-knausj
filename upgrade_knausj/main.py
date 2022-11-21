@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import typer
@@ -17,6 +18,20 @@ repo_base_path = Path.home() / "knausj_staging"
 knausj_uri = "git@github.com:knausj85/knausj_talon.git"
 
 
+@dataclass
+class ChallengingCommit:
+    sha: str
+    is_precommit: bool
+
+
+challenging_commits = [
+    ChallengingCommit("2877a6849d75e5fa78c9453991a9235b4f6d9dcf", True),
+    ChallengingCommit("3bf4882fa0a05b22171e59118bd7c9640aae753a", True),
+    ChallengingCommit("446ec764c9caa98973eacd7f792b6a087a1b635f", True),
+    ChallengingCommit("b25bac46c6543d0ec5fe2b2d09596444cd903371", False),
+]
+
+
 @app.command()
 def main(
     my_repo_uri: str = typer.Option(
@@ -28,55 +43,102 @@ def main(
     Upgrade knausj
     """
 
-    name = time.strftime("%Y-%m-%dT%H-%M-%S")
-
     repo_base_path.mkdir(parents=True, exist_ok=True)
-    log_dir = repo_base_path / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
-    log_path = log_dir / f"{name}.txt"
-    repo_path = repo_base_path / name
+    log_path = repo_base_path / "log.txt"
+    repo_path = repo_base_path / "repo"
 
     print(f"Logging to '{log_path}'\n")
 
-    print(f"Initializing repo in '{repo_path}'...")
+    print(f"Working in '{repo_path}'...")
     repo = Repo.init(repo_path)
 
-    mine = repo.create_remote("mine", my_repo_uri)
-    print(f"\nCreated remote '{mine.name}' for '{my_repo_uri}'")
-    mine.fetch()
-    try:
-        mine_remote_main = mine.refs[my_branch]
-    except IndexError:
-        print(
-            f":x: [bold red]Error[/bold red] Branch '{my_branch}' does not exist on your repo"
+    if repo.git.status("--porcelain") != "":
+        error_and_exit(
+            "Working directory has uncommitted changes; commit and try again"
         )
-        print(
-            "Run with '--my-repo-uri' arg to specify your branch name (probably 'master')"
-        )
-        exit(1)
-    mine_main = repo.create_head("mine_main", mine_remote_main)
-    print(f"Created branch '{mine_main.name}' to track '{mine.name}:{my_branch}'")
 
-    mine_main.set_tracking_branch(mine_remote_main)
-
-    knausj = repo.create_remote("knausj", knausj_uri)
-    print(f"\nCreated remote '{knausj.name}' for '{knausj_uri}'")
-    knausj.fetch()
-    knausj_remote_main = knausj.refs.main
-    knausj_main = repo.create_head("knausj_main", knausj.refs.main)
-    print(f"Created branch '{knausj_main.name}' to track '{knausj.name}:main'")
-    knausj_main.set_tracking_branch(knausj_remote_main)
+    mine, mine_main = setup_mine(repo, my_repo_uri, my_branch)
+    knausj, knausj_main = setup_knausj(repo)
 
     mine_main.checkout()
 
+
+def setup_mine(repo: Repo, my_repo_uri: str, my_branch: str):
+    if "mine" not in repo.remotes:
+        mine = repo.create_remote("mine", my_repo_uri)
+        print(f"\nCreated remote '{mine.name}' for '{my_repo_uri}'")
+    else:
+        mine = repo.remotes.mine
+
+    mine.fetch()
+
+    try:
+        mine_remote_main = mine.refs[my_branch]
+    except IndexError:
+        error_and_exit(
+            f"Branch '{my_branch}' does not exist on your repo\n"
+            "Run with '--my-repo-uri' arg to specify your branch name (probably 'master')"
+        )
+
+    if "mine_main" not in repo.heads:
+        mine_main = repo.create_head("mine_main", mine_remote_main)
+        print(f"Created branch '{mine_main.name}' to track '{mine.name}:{my_branch}'")
+        mine_main.set_tracking_branch(mine_remote_main)
+    else:
+        mine_main = repo.heads.mine_main
+
+        if mine_main.commit != mine_remote_main.commit:
+            if repo.is_ancestor(mine_main.commit, mine_remote_main.commit):
+                print(f"Local branch '{mine_main}' is outdated; updating...")
+                mine.pull()
+
+            if not repo.is_ancestor(mine_remote_main.commit, mine_main.commit):
+                error_and_exit("Looks like you have changes remotely and locally")
+
+    return mine, mine_main
+
+
+def setup_knausj(repo: Repo):
+    if "knausj" not in repo.remotes:
+        knausj = repo.create_remote("knausj", knausj_uri)
+        print(f"\nCreated remote '{knausj.name}' for '{knausj_uri}'")
+    else:
+        knausj = repo.remotes.knausj
+
+    knausj.fetch()
+
+    knausj_remote_main = knausj.refs.main
+
+    if "knausj_main" not in repo.heads:
+        knausj_main = repo.create_head("knausj_main", knausj_remote_main)
+        print(f"Created branch '{knausj_main.name}' to track '{knausj.name}:main'")
+        knausj_main.set_tracking_branch(knausj_remote_main)
+    else:
+        knausj_main = repo.heads.knausj_main
+
+        if knausj_main.commit != knausj_remote_main.commit and repo.is_ancestor(
+            knausj_main.commit, knausj_remote_main.commit
+        ):
+            print(f"Local branch '{knausj_main}' is outdated; updating...")
+            knausj.pull()
+
+    return knausj, knausj_main
+
+
+def error_and_exit(message: str):
+    print(f":x: [bold red]Error[/bold red] {message}")
+    sys.exit(1)
+
+
+def handle_pre_commit_commit(repo: Repo, log_path: str, sha: str):
     print("\nCopying pre-commit config from 'knausj'...")
-    repo.git.checkout(knausj_main, ".pre-commit-config.yaml")
+    repo.git.checkout(sha, ".pre-commit-config.yaml")
 
     if len(repo.index.entries) > 0:
         repo.index.commit(message="Get pre-commit from knausj")
 
     print("Running pre-commit...")
-    with cd(repo_path), open(log_path, "a") as out:
+    with cd(repo.working_tree_dir), open(log_path, "a") as out:
         result = subprocess.run(["pre-commit", "run", "--all"], stdout=out, stderr=out)
 
     if result.returncode not in [0, 1]:
@@ -89,4 +151,4 @@ def main(
         repo.index.commit(message="Run pre-commit")
 
     print("Initiating merge...")
-    repo.git.merge(knausj_main)
+    repo.git.merge(sha)
