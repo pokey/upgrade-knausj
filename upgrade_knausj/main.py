@@ -11,6 +11,7 @@ from git.objects.commit import Commit
 from git.refs import Head
 from git.repo import Repo
 from rich import print
+from rich.prompt import Confirm
 
 from upgrade_knausj.cd import cd
 
@@ -67,10 +68,18 @@ def main(
     mine_main.checkout()
 
     for challenging_commit in challenging_commits:
-        if challenging_commit.is_precommit:
-            handle_pre_commit_commit(repo, log_path, challenging_commit.sha, mine_main)
-        else:
-            raise Exception("Other challenging commits not yet supported")
+        handle_pre_commit_commit(repo, log_path, challenging_commit, mine_main)
+
+    if not repo.is_ancestor(knausj_main.commit, repo.head.commit):
+        print("Merging with knausj_main...")
+        try:
+            repo.git.merge(knausj_main)
+        except GitCommandError as err:
+            print(err.stdout)
+            exit(1)
+
+    if Confirm.ask("All done!  Shall I push to your repo?"):
+        mine.push()
 
 
 def setup_mine(repo: Repo, my_repo_uri: str, my_branch: str):
@@ -140,7 +149,10 @@ def error_and_exit(message: str):
     sys.exit(1)
 
 
-def handle_pre_commit_commit(repo: Repo, log_path: Path, sha: str, mine_main: Head):
+def handle_pre_commit_commit(
+    repo: Repo, log_path: Path, challenging_commit: ChallengingCommit, mine_main: Head
+):
+    sha = challenging_commit.sha
     short_name = sha[:7]
     commit = repo.commit(sha)
     parent = commit.parents[0]
@@ -160,6 +172,17 @@ def handle_pre_commit_commit(repo: Repo, log_path: Path, sha: str, mine_main: He
             print(err.stdout)
             exit(1)
 
+    if not challenging_commit.is_precommit:
+        print(f"Merging with commit '{short_name}'")
+        try:
+            repo.git.merge(commit)
+        except GitCommandError as err:
+            print(err.stdout)
+            exit(1)
+        return
+
+    # Handle pre-commit commits; we just run pre-commit ourselves instead of
+    # actually doing a merge
     tmp_branch = repo.create_head(f"merge_{short_name}", "HEAD")
     tmp_branch.checkout()
     print(f"Created temp branch '{tmp_branch.name}'")
