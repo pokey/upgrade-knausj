@@ -44,9 +44,19 @@ def main(
     mine = repo.create_remote("mine", my_repo_uri)
     print(f"\nCreated remote '{mine.name}' for '{my_repo_uri}'")
     mine.fetch()
-    mine_remote_main = mine.refs[my_branch]
+    try:
+        mine_remote_main = mine.refs[my_branch]
+    except IndexError:
+        print(
+            f":x: [bold red]Error[/bold red] Branch '{my_branch}' does not exist on your repo"
+        )
+        print(
+            "Run with '--my-repo-uri' arg to specify your branch name (probably 'master')"
+        )
+        exit(1)
     mine_main = repo.create_head("mine_main", mine_remote_main)
     print(f"Created branch '{mine_main.name}' to track '{mine.name}:{my_branch}'")
+
     mine_main.set_tracking_branch(mine_remote_main)
 
     knausj = repo.create_remote("knausj", knausj_uri)
