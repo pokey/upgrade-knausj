@@ -27,15 +27,15 @@ class CoreCommandRunner(CommandRunner):
 
     def __call__(self) -> None:
         for step in self._steps:
+            if not step.always_run and step.postcondition().success:
+                self._printer.info(f"Already completed step '{step.name}'; skipping")
+                continue
+
             precondition_result = step.precondition()
             if not precondition_result.success:
                 raise UnmetConditionError(
                     "precondition", step.name, precondition_result.message
                 )
-
-            if not step.always_run and step.postcondition().success:
-                self._printer.info(f"Already completed step '{step.name}'; skipping")
-                continue
 
             self._printer.info(f"Running '{step.name}'...")
             step()

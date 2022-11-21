@@ -1,10 +1,12 @@
+from typing import Sequence
+
 from upgrade_knausj.types.condition import Condition, ConditionResult
 
 
 class CompoundCondition(Condition):
-    _conditions: list[Condition]
+    _conditions: Sequence[Condition]
 
-    def __init__(self, conditions: list[Condition]):
+    def __init__(self, *conditions: Condition):
         self._conditions = conditions
 
     def __call__(self) -> ConditionResult:

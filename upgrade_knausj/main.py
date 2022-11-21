@@ -9,7 +9,8 @@ from upgrade_knausj.repository import Repository
 from upgrade_knausj.stdio.printer import Printer
 from upgrade_knausj.stdio.prompter import Prompter
 from upgrade_knausj.steps.add_remote import AddOrigin, AddUpstream
-from upgrade_knausj.steps.initialize_repo import InitializeRepo
+from upgrade_knausj.steps.create_repo import CreateRepo
+from upgrade_knausj.steps.fetch_remote import FetchOrigin, FetchUpstream
 
 app = typer.Typer()
 
@@ -29,9 +30,13 @@ def main():
     repository = Repository(repo_path)
 
     steps = [
-        InitializeRepo(repository),
+        CreateRepo(repository),
         AddOrigin(repository, AskForOriginUri(prompter)),
         AddUpstream(repository, knausj_uri),
+        FetchOrigin(repository),
+        FetchUpstream(repository),
+        # CheckoutOrigin(repository),
+        # CheckoutUpstream(repository),
     ]
 
     runner = ErrorPrintingRunner(printer, CoreCommandRunner(printer, steps))

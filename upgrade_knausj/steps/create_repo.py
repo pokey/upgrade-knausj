@@ -4,8 +4,8 @@ from upgrade_knausj.repository import Repository
 from upgrade_knausj.types.step import Step
 
 
-class InitializeRepo(Step):
-    name = "Initialize repository"
+class CreateRepo(Step):
+    name = "Create repository"
     always_run: bool = True
 
     _repository: Repository

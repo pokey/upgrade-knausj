@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Literal, Union
 
+from git.remote import Remote
 from git.repo import Repo
 
 ORIGIN = "origin"
 UPSTREAM = "upstream"
 
-RemoteName = Union[Literal["origin"], Literal["upstream"]]
+RemoteName = Literal["origin", "upstream"]
 
 
 class Repository:
@@ -23,6 +24,9 @@ class Repository:
     def origin(self):
         return next(remote for remote in self._repo.remotes if remote.name == ORIGIN)
 
+    def _get_remote(self, name: RemoteName) -> Remote:
+        return next(remote for remote in self._repo.remotes if remote.name == name)
+
     def init(self):
         self._repo = Repo.init(self.path)
 
@@ -32,3 +36,7 @@ class Repository:
 
     def has_remote(self, name: RemoteName):
         return len([remote for remote in self._repo.remotes if remote.name == name]) > 0
+
+    def fetch_remote(self, name: RemoteName):
+        remote = self._get_remote(name)
+        remote.fetch()
