@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import typer
+import yaml
 from git.exc import GitCommandError
 from git.objects.commit import Commit
 from git.refs import Head
@@ -148,11 +149,11 @@ def handle_pre_commit_commit(repo: Repo, log_path: Path, sha: str, mine_main: He
         return
 
     print(
-        f"\nAssisting with challenging commit {short_name} ('{commit.message.splitlines()[0]}'...)"
+        f"\nAssisting with challenging commit '{short_name}' (\"{commit.message.splitlines()[0]}\")"
     )
 
     if not repo.is_ancestor(parent, repo.head.commit):
-        print(f"Merging with parent commit '{short_name}~'")
+        print(f"Merging with parent commit '{str(parent)[:7]}'")
         try:
             repo.git.merge(parent)
         except GitCommandError as err:
@@ -166,6 +167,15 @@ def handle_pre_commit_commit(repo: Repo, log_path: Path, sha: str, mine_main: He
 
     repo.git.checkout(commit, ".pre-commit-config.yaml")
 
+    if sha.startswith("3bf4882"):
+        print("Force shed version to 0.10.3 to work around bug...")
+        pre_commit_config = Path(repo.working_tree_dir) / ".pre-commit-config.yaml"  # type: ignore
+        with open(pre_commit_config) as f:
+            config = yaml.safe_load(f)
+        config["repos"][-1]["rev"] = "0.10.3"
+        with open(pre_commit_config, "w") as f:
+            yaml.dump(config, f)
+
     print("Running pre-commit...")
     with cd(repo.working_tree_dir), open(log_path, "a") as out:
         result = subprocess.run(["pre-commit", "run", "--all"], stdout=out, stderr=out)
@@ -173,6 +183,9 @@ def handle_pre_commit_commit(repo: Repo, log_path: Path, sha: str, mine_main: He
     if result.returncode not in [0, 1]:
         print(f"Error running pre-commit; see {log_path} for more info")
         sys.exit(result.returncode)
+
+    if sha.startswith("3bf4882"):
+        repo.git.restore(str(pre_commit_config))
 
     repo.git.add(all=True)
 

@@ -15,6 +15,7 @@ python = "^3.10"
 typer = { extras = ["all"], version = "^0.7.0" }
 gitpython = "^3.1.29"
 rich = "^12.6.0"
+pyyaml = "^6.0"
 
 
 [tool.poetry.group.test.dependencies]
