@@ -5,6 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import typer
+from git.exc import GitCommandError
+from git.objects.commit import Commit
+from git.refs import Head
 from git.repo import Repo
 from rich import print
 
@@ -61,6 +64,12 @@ def main(
     knausj, knausj_main = setup_knausj(repo)
 
     mine_main.checkout()
+
+    for challenging_commit in challenging_commits:
+        if challenging_commit.is_precommit:
+            handle_pre_commit_commit(repo, log_path, challenging_commit.sha, mine_main)
+        else:
+            raise Exception("Other challenging commits not yet supported")
 
 
 def setup_mine(repo: Repo, my_repo_uri: str, my_branch: str):
@@ -130,12 +139,32 @@ def error_and_exit(message: str):
     sys.exit(1)
 
 
-def handle_pre_commit_commit(repo: Repo, log_path: str, sha: str):
-    print("\nCopying pre-commit config from 'knausj'...")
-    repo.git.checkout(sha, ".pre-commit-config.yaml")
+def handle_pre_commit_commit(repo: Repo, log_path: Path, sha: str, mine_main: Head):
+    short_name = sha[:7]
+    commit = repo.commit(sha)
+    parent = commit.parents[0]
 
-    if len(repo.index.entries) > 0:
-        repo.index.commit(message="Get pre-commit from knausj")
+    if repo.is_ancestor(commit, repo.head.commit):
+        return
+
+    print(
+        f"\nAssisting with challenging commit {short_name} ('{commit.message.splitlines()[0]}'...)"
+    )
+
+    if not repo.is_ancestor(parent, repo.head.commit):
+        print(f"Merging with parent commit '{short_name}~'")
+        try:
+            repo.git.merge(parent)
+        except GitCommandError as err:
+            print(err.stdout)
+            exit(1)
+
+    tmp_branch = repo.create_head(f"merge_{short_name}", "HEAD")
+    tmp_branch.checkout()
+    print(f"Created temp branch '{tmp_branch.name}'")
+    print(f"Copying pre-commit config from '{short_name}'...")
+
+    repo.git.checkout(commit, ".pre-commit-config.yaml")
 
     print("Running pre-commit...")
     with cd(repo.working_tree_dir), open(log_path, "a") as out:
@@ -151,4 +180,13 @@ def handle_pre_commit_commit(repo: Repo, log_path: str, sha: str):
         repo.index.commit(message="Run pre-commit")
 
     print("Initiating merge...")
-    repo.git.merge(sha)
+    mine_main.checkout()
+
+    merge_commit = Commit.create_from_tree(
+        repo,
+        tmp_branch.commit.tree,
+        f"Merge my main with {sha[:7]} by running pre-commit",
+        [mine_main.commit, commit],
+    )
+    mine_main.commit = merge_commit
+    mine_main.checkout(True)
