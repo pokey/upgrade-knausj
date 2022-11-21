@@ -52,8 +52,7 @@ def main(
     log_path = repo_base_path / "log.txt"
     repo_path = repo_base_path / "repo"
 
-    print(f"Working in '{repo_path}'...")
-    print(f"Logging to '{log_path}'")
+    print(f"Working in '{repo_path}'...\n")
     repo = Repo.init(repo_path)
 
     if repo.git.status("--porcelain") != "":
@@ -67,7 +66,7 @@ def main(
     mine_main.checkout()
 
     for challenging_commit in challenging_commits:
-        handle_pre_commit_commit(repo, log_path, challenging_commit, mine_main)
+        handle_challenging_commit(repo, log_path, challenging_commit, mine_main)
 
     if not repo.is_ancestor(knausj_main.commit, repo.head.commit):
         print("Merging with knausj_main...")
@@ -77,7 +76,9 @@ def main(
             print(err.stdout)
             exit(1)
 
-    if Confirm.ask("All done!  Shall I push to your repo?"):
+    if Confirm.ask(
+        ":tada: [bold green]All done![/bold green] :tada:  Shall I push to your repo?"
+    ):
         mine.push()
 
 
@@ -148,7 +149,7 @@ def error_and_exit(message: str):
     sys.exit(1)
 
 
-def handle_pre_commit_commit(
+def handle_challenging_commit(
     repo: Repo, log_path: Path, challenging_commit: ChallengingCommit, mine_main: Head
 ):
     sha = challenging_commit.sha
@@ -203,7 +204,7 @@ def handle_pre_commit_commit(
         result = subprocess.run(["pre-commit", "run", "--all"], stdout=out, stderr=out)
 
     if result.returncode not in [0, 1]:
-        print(f"Error running pre-commit; see {log_path} for more info")
+        print(f"Error running pre-commit; see '{log_path}' for more info")
         sys.exit(result.returncode)
 
     if sha.startswith("3bf4882"):
