@@ -52,9 +52,8 @@ def main(
     log_path = repo_base_path / "log.txt"
     repo_path = repo_base_path / "repo"
 
-    print(f"Logging to '{log_path}'\n")
-
     print(f"Working in '{repo_path}'...")
+    print(f"Logging to '{log_path}'")
     repo = Repo.init(repo_path)
 
     if repo.git.status("--porcelain") != "":
