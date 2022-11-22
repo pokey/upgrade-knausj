@@ -60,7 +60,7 @@ def main(
             "Working directory has uncommitted changes; commit and try again"
         )
 
-    mine, mine_main = setup_mine(repo, my_repo_uri, my_branch)
+    mine, mine_main, mine_remote_main = setup_mine(repo, my_repo_uri, my_branch)
     knausj, knausj_main = setup_knausj(repo)
 
     mine_main.checkout()
@@ -75,6 +75,10 @@ def main(
         except GitCommandError as err:
             print(err.stdout)
             exit(1)
+
+    if mine_main.commit == mine_remote_main.commit:
+        print("Nothing to be done.")
+        exit(0)
 
     if Confirm.ask(
         ":tada: [bold green]All done![/bold green] :tada:  Shall I push to your repo?"
@@ -114,7 +118,7 @@ def setup_mine(repo: Repo, my_repo_uri: str, my_branch: str):
             if not repo.is_ancestor(mine_remote_main.commit, mine_main.commit):
                 error_and_exit("Looks like you have changes remotely and locally")
 
-    return mine, mine_main
+    return mine, mine_main, mine_remote_main
 
 
 def setup_knausj(repo: Repo):
