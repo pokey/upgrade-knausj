@@ -26,12 +26,7 @@ challenging_commits = [
 
 
 @app.command()
-def main(
-    my_repo_uri: str = typer.Option(
-        ..., prompt=True, help="The git URI for your fork of knausj"
-    ),
-    my_branch: str = typer.Option("main", help="Which branch to use"),
-):
+def main():
     """
     Upgrade knausj
     """
@@ -48,7 +43,7 @@ def main(
             "Working directory has uncommitted changes; commit and try again"
         )
 
-    mine_main, mine_remote_main = setup_mine(repo, my_repo_uri, my_branch)
+    mine_main, mine_remote_main = setup_mine(repo)
     knausj_main = setup_knausj(repo)
 
     mine_main.checkout(True)
