@@ -48,10 +48,10 @@ def main(
             "Working directory has uncommitted changes; commit and try again"
         )
 
-    mine, mine_main, mine_remote_main = setup_mine(repo, my_repo_uri, my_branch)
-    knausj, knausj_main = setup_knausj(repo)
+    mine_main, mine_remote_main = setup_mine(repo, my_repo_uri, my_branch)
+    knausj_main = setup_knausj(repo)
 
-    mine_main.checkout()
+    mine_main.checkout(True)
 
     for challenging_commit in challenging_commits:
         handle_challenging_commit(repo, log_path, challenging_commit, mine_main)

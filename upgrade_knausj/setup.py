@@ -1,3 +1,5 @@
+from re import M
+
 from git.repo import Repo
 
 from upgrade_knausj.util import error_and_exit
@@ -34,9 +36,10 @@ def setup_mine(repo: Repo, my_repo_uri: str, my_branch: str):
             mine_remote_main.commit, mine_main.commit
         ):
             print(f"Local branch '{mine_main}' is outdated; updating...")
-            mine.pull()
+            mine_main.checkout(True)
+            repo.git.pull()
 
-    return mine, mine_main, mine_remote_main
+    return mine_main, mine_remote_main
 
 
 def setup_knausj(repo: Repo):
@@ -61,6 +64,6 @@ def setup_knausj(repo: Repo):
             knausj_main.commit, knausj_remote_main.commit
         ):
             print(f"Local branch '{knausj_main}' is outdated; updating...")
-            knausj.pull()
+            knausj_main.commit = knausj_remote_main.commit
 
-    return knausj, knausj_main
+    return knausj_main
