@@ -17,3 +17,5 @@ Helper for performing `knausj` upgrades.
 2. Run `knausj-upgrade`
 3. Perform any necessary merges, then re-run `knausj-upgrade`
 4. Repeat steps 3-4 until it says you're done
+5. Do a pull from your main Talon user directory
+6. Restart Talon and look in the log file for errors
