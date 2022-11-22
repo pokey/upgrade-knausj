@@ -52,7 +52,7 @@ def main():
         handle_challenging_commit(repo, log_path, challenging_commit, mine_main)
 
     if not repo.is_ancestor(knausj_main.commit, repo.head.commit):
-        print("Merging with knausj_main...")
+        print("Merging with 'knausj_main'...")
         merge_exiting_on_conflict(repo, knausj_main.commit)
 
     if mine_main.commit == mine_remote_main.commit:
