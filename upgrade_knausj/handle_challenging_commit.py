@@ -7,6 +7,7 @@ import yaml
 from git.objects.commit import Commit
 from git.refs import Head
 from git.repo import Repo
+from rich import print
 
 from upgrade_knausj.git import merge_exiting_on_conflict
 from upgrade_knausj.util import cd

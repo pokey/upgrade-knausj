@@ -44,7 +44,7 @@ def setup_mine_main_branch(repo: Repo, mine: Remote):
         mine_main = repo.heads.mine_main
         mine_remote_main = mine_main.tracking_branch()
     else:
-        mine_main = repo.create_head(mine_main_local_name)
+        mine_main = repo.create_head(mine_main_local_name, mine.refs[0])
         print(f"Created branch '{mine_main.name}'")
         mine_remote_main = None
 
