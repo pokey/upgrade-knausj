@@ -34,7 +34,7 @@ def main():
 
     repo_base_path.mkdir(parents=True, exist_ok=True)
     log_path = repo_base_path / "log.txt"
-    repo_path = repo_base_path / "repo"
+    repo_path = repo_base_path / "knausj_staging"
 
     print(f"Working in '{repo_path}'...\n")
     repo = Repo.init(repo_path)
