@@ -110,13 +110,11 @@ def setup_mine(repo: Repo, my_repo_uri: str, my_branch: str):
     else:
         mine_main = repo.heads.mine_main
 
-        if mine_main.commit != mine_remote_main.commit:
-            if repo.is_ancestor(mine_main.commit, mine_remote_main.commit):
-                print(f"Local branch '{mine_main}' is outdated; updating...")
-                mine.pull()
-
-            if not repo.is_ancestor(mine_remote_main.commit, mine_main.commit):
-                error_and_exit("Looks like you have changes remotely and locally")
+        if mine_main.commit != mine_remote_main.commit and not repo.is_ancestor(
+            mine_remote_main.commit, mine_main.commit
+        ):
+            print(f"Local branch '{mine_main}' is outdated; updating...")
+            mine.pull()
 
     return mine, mine_main, mine_remote_main
 
