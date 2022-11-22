@@ -1,5 +1,8 @@
 import contextlib
 import os
+import sys
+
+from rich import print
 
 
 # From https://stackoverflow.com/a/24469659/2605678
@@ -11,3 +14,8 @@ def cd(path):
         yield
     finally:
         os.chdir(old_path)
+
+
+def error_and_exit(message: str):
+    print(f":x: [bold red]Error[/bold red] {message}")
+    sys.exit(1)
