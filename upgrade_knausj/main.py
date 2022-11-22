@@ -56,7 +56,9 @@ def main():
         merge_exiting_on_conflict(repo, knausj_main.commit)
 
     if mine_main.commit == mine_remote_main.commit:
-        print("Nothing to be done.")
+        print(
+            "[bold green]Looks like everything is already up to date![/bold green] :raised_hands:"
+        )
         exit(0)
 
     if Confirm.ask(
