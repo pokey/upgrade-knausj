@@ -59,7 +59,9 @@ def perform_pre_commit_merge(
     print(f"Copying pre-commit config from '{short_name}'...")
 
     repo.git.checkout(commit, ".pre-commit-config.yaml")
-    repo.git.checkout(commit, ".editorconfig")
+
+    if not sha.startswith("2877a68"):
+        repo.git.checkout(commit, ".editorconfig")
 
     if sha.startswith("3bf4882"):
         # For some reason shed before 0.10.3 doesn't work anymore, so we just
