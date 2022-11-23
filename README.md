@@ -5,6 +5,7 @@ Helper for performing `knausj` upgrades.
 ## Assumptions
 
 - You have a fork of `knausj`
+- You haven't altered your pre-commit config. If you don't know what that means, then you are fine 😊
 
 ## Installation
 
