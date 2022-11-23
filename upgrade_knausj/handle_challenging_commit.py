@@ -62,6 +62,8 @@ def perform_pre_commit_merge(
     repo.git.checkout(commit, ".editorconfig")
 
     if sha.startswith("3bf4882"):
+        # For some reason shed before 0.10.3 doesn't work anymore, so we just
+        # force the newer version
         print("Force shed version to 0.10.3 to work around bug...")
         pre_commit_config = Path(repo.working_tree_dir) / ".pre-commit-config.yaml"  # type: ignore
         with open(pre_commit_config) as f:
@@ -80,6 +82,7 @@ def perform_pre_commit_merge(
 
     if sha.startswith("3bf4882"):
         repo.git.restore(str(pre_commit_config))  # type: ignore
+        repo.git.checkout(commit, ".pre-commit-config.yaml")
 
     repo.git.add(all=True)
 
@@ -96,7 +99,7 @@ def perform_pre_commit_merge(
     merge_commit = Commit.create_from_tree(
         repo,
         tmp_branch.commit.tree,
-        f"Merge my main with {sha[:7]} by running pre-commit",
+        f"Merge my main with {short_name} by running pre-commit",
         [mine_main.commit, commit],
     )
     mine_main.commit = merge_commit

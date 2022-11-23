@@ -9,7 +9,7 @@ Helper for performing `knausj` upgrades.
 ## Installation
 
 1. Install [`pipx`](https://pypa.github.io/pipx/)
-2. `pipx install knausj-upgrade`
+2. Run `pipx install knausj-upgrade`
 
 ## How to run
 
