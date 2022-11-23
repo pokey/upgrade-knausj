@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "upgrade-knausj"
-version = "0.3.3"
+version = "0.3.4"
 description = ""
 authors = ["Pokey Rule <755842+pokey@users.noreply.github.com>"]
 readme = "README.md"
