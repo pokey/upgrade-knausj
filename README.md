@@ -16,7 +16,7 @@ Helper for performing `knausj` upgrades.
 
 1. Push your changes to your fork
 2. Run `upgrade-knausj`
-3. If requested, resolve any merge conflicts, commit, then re-run `upgrade-knausj`
-4. Repeat steps 3-4 until it says you're done
+3. If necessary, resolve any merge conflicts, commit, then re-run `upgrade-knausj`
+4. Repeat steps 2-3 until it says you're done
 5. Do a pull from your main Talon user directory
 6. Restart Talon and look in the log file for errors
