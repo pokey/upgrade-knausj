@@ -77,6 +77,7 @@ def perform_pre_commit_merge(
             # version
             print("Force talonfmt version to 1.8.1 to work around bug...")
             config["repos"][-1]["rev"] = "1.8.1"
+            config["repos"][2:5] = []
         with open(pre_commit_config, "w") as f:
             yaml.dump(config, f)
 
