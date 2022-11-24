@@ -63,14 +63,20 @@ def perform_pre_commit_merge(
     if not sha.startswith("2877a68"):
         repo.git.checkout(commit, ".editorconfig")
 
-    if sha.startswith("3bf4882"):
-        # For some reason shed before 0.10.3 doesn't work anymore, so we just
-        # force the newer version
-        print("Force shed version to 0.10.3 to work around bug...")
+    if sha.startswith("3bf4882") or sha.startswith("446ec76"):
         pre_commit_config = Path(repo.working_tree_dir) / ".pre-commit-config.yaml"  # type: ignore
         with open(pre_commit_config) as f:
             config = yaml.safe_load(f)
-        config["repos"][-1]["rev"] = "0.10.3"
+        if sha.startswith("3bf4882"):
+            # For some reason shed before 0.10.3 doesn't work anymore, so we just
+            # force the newer version
+            print("Force shed version to 0.10.3 to work around bug...")
+            config["repos"][-1]["rev"] = "0.10.3"
+        if sha.startswith("446ec76"):
+            # Talonfmt before 1.8.1 had issues, so we just force the newer
+            # version
+            print("Force talonfmt version to 1.8.1 to work around bug...")
+            config["repos"][-1]["rev"] = "1.8.1"
         with open(pre_commit_config, "w") as f:
             yaml.dump(config, f)
 
@@ -82,7 +88,7 @@ def perform_pre_commit_merge(
         print(f"Error running pre-commit; see '{log_path}' for more info")
         sys.exit(result.returncode)
 
-    if sha.startswith("3bf4882"):
+    if sha.startswith("3bf4882") or sha.startswith("446ec76"):
         repo.git.restore(str(pre_commit_config))  # type: ignore
         repo.git.checkout(commit, ".pre-commit-config.yaml")
 
