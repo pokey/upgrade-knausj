@@ -20,7 +20,7 @@ class ChallengingCommit:
 
 
 def handle_challenging_commit(
-    repo: Repo, log_path: Path, challenging_commit: ChallengingCommit, mine_main: Head
+    repo: Repo, log_dir: Path, challenging_commit: ChallengingCommit, mine_main: Head
 ):
     sha = challenging_commit.sha
     short_name = sha[:7]
@@ -39,21 +39,21 @@ def handle_challenging_commit(
         merge_exiting_on_conflict(repo, parent)
 
     if challenging_commit.is_precommit:
-        perform_pre_commit_merge(repo, log_path, commit, mine_main)
+        perform_pre_commit_merge(repo, log_dir, commit, mine_main)
     else:
         print(f"Merging with commit '{short_name}'")
         merge_exiting_on_conflict(repo, commit)
 
 
 def perform_pre_commit_merge(
-    repo: Repo, log_path: Path, commit: Commit, mine_main: Head
+    repo: Repo, log_dir: Path, commit: Commit, mine_main: Head
 ):
     sha = commit.hexsha
     short_name = sha[:7]
 
     # Handle pre-commit commits; we just run pre-commit ourselves instead of
     # actually doing a merge
-    tmp_branch = repo.create_head(f"merge_{short_name}", "HEAD")
+    tmp_branch = repo.create_head(f"merge_{short_name}")
     tmp_branch.checkout()
     print(f"Created temp branch '{tmp_branch.name}'")
     print(f"Copying pre-commit config from '{short_name}'...")
@@ -82,11 +82,29 @@ def perform_pre_commit_merge(
             yaml.dump(config, f)
 
     print("Running pre-commit...")
-    with cd(repo.working_tree_dir), open(log_path, "a") as out:
+    log_path = log_dir / f"pre-commit-{short_name}.txt"
+    with cd(repo.working_tree_dir), open(log_path, "w") as out:
         result = subprocess.run(["pre-commit", "run", "--all"], stdout=out, stderr=out)
 
     if result.returncode not in [0, 1]:
         print(f"Error running pre-commit; see '{log_path}' for more info")
+        print(
+            "[bold yellow]If you get stuck, please ask on the #upgrade-knausj "
+            "channel on the Talon slack workspace :smiling_face_with_smiling_eyes:[/bold yellow]\n"
+        )
+        counter = 1
+        while True:
+            error_branch_name = f"pre_commit_{short_name}_error_{counter}"
+            if error_branch_name not in repo.heads:
+                break
+            counter += 1
+
+        error_branch = repo.create_head(error_branch_name)
+        error_branch.checkout()
+        repo.delete_head(tmp_branch)
+        repo.git.add(all=True)
+        if len(repo.index.entries) > 0:
+            repo.index.commit(message="Failed attempt to run pre-commit")
         sys.exit(result.returncode)
 
     if sha.startswith("3bf4882") or sha.startswith("446ec76"):

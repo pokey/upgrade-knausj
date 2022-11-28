@@ -33,9 +33,15 @@ def main():
     """
 
     repo_base_path.mkdir(parents=True, exist_ok=True)
-    log_path = repo_base_path / "log.txt"
+    log_dir = repo_base_path / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
     repo_path = repo_base_path / "knausj_staging"
 
+    print("Welcome to the knausj-upgrade script!\n")
+    print(
+        "[bold yellow]If you run into any issues, please ask on the #upgrade-knausj "
+        "channel on the Talon slack workspace :smiling_face_with_smiling_eyes:[/bold yellow]\n"
+    )
     print(f"Working in '{repo_path}'...\n")
     repo = Repo.init(repo_path)
 
@@ -50,7 +56,7 @@ def main():
     mine_main.checkout(True)
 
     for challenging_commit in challenging_commits:
-        handle_challenging_commit(repo, log_path, challenging_commit, mine_main)
+        handle_challenging_commit(repo, log_dir, challenging_commit, mine_main)
 
     if not repo.is_ancestor(knausj_main.commit, repo.head.commit):
         print("Merging with 'knausj_main'...")
