@@ -28,7 +28,7 @@ def print_error(message: str):
 def print_slack_help_info(message: str, extra_empty_line: bool = False):
     end = "\n\n" if extra_empty_line else "\n"
     print(
-        f"[bold yellow]If {message}, please ask on the #upgrade-knausj "
+        f"[bold yellow]If {message}, please ask in the #upgrade-knausj "
         f"channel on the [link=https://talonvoice.com/chat]Talon slack workspace[/link] :smiling_face_with_smiling_eyes:[/bold yellow]",
         end=end,
     )
