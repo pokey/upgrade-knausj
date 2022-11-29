@@ -37,7 +37,7 @@ def main():
     log_dir.mkdir(parents=True, exist_ok=True)
     repo_path = repo_base_path / "knausj_staging"
 
-    print("[bold green]Welcome to the knausj-upgrade script![/bold green] :wave:\n")
+    print("[bold green]Welcome to the upgrade-knausj script![/bold green] :wave:\n")
     print_slack_help_info("you run into any issues", True)
     print(f"Working in '{repo_path}'...\n")
     repo = Repo.init(repo_path)
