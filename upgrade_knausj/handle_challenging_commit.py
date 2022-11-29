@@ -10,7 +10,7 @@ from git.repo import Repo
 from rich import print
 
 from upgrade_knausj.git import merge_exiting_on_conflict
-from upgrade_knausj.util import cd
+from upgrade_knausj.util import cd, print_error, print_slack_help_info
 
 
 @dataclass
@@ -53,7 +53,7 @@ def perform_pre_commit_merge(
 
     # Handle pre-commit commits; we just run pre-commit ourselves instead of
     # actually doing a merge
-    tmp_branch = repo.create_head(f"merge_{short_name}")
+    tmp_branch = repo.create_head(f"merge-{short_name}")
     tmp_branch.checkout()
     print(f"Created temp branch '{tmp_branch.name}'")
     print(f"Copying pre-commit config from '{short_name}'...")
@@ -87,17 +87,15 @@ def perform_pre_commit_merge(
         result = subprocess.run(["pre-commit", "run", "--all"], stdout=out, stderr=out)
 
     if result.returncode not in [0, 1]:
-        print(f"Error running pre-commit; see '{log_path}' for more info")
-        print(
-            "[bold yellow]If you get stuck, please ask on the #upgrade-knausj "
-            "channel on the Talon slack workspace :smiling_face_with_smiling_eyes:[/bold yellow]\n"
-        )
+        print("")
+        print_error(f"running pre-commit; see '{log_path}' for more info")
+        print_slack_help_info("you get stuck")
+
         counter = 1
-        while True:
-            error_branch_name = f"pre_commit_{short_name}_error_{counter}"
-            if error_branch_name not in repo.heads:
-                break
+        error_branch_name = f"pre-commit-{short_name}-error"
+        while error_branch_name in repo.heads:
             counter += 1
+            error_branch_name = f"pre-commit-{short_name}-error-{counter}"
 
         error_branch = repo.create_head(error_branch_name)
         error_branch.checkout()

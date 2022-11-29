@@ -11,7 +11,7 @@ from upgrade_knausj.handle_challenging_commit import (
     handle_challenging_commit,
 )
 from upgrade_knausj.setup import setup_knausj, setup_mine
-from upgrade_knausj.util import error_and_exit
+from upgrade_knausj.util import error_and_exit, print_slack_help_info
 
 app = typer.Typer()
 
@@ -37,11 +37,8 @@ def main():
     log_dir.mkdir(parents=True, exist_ok=True)
     repo_path = repo_base_path / "knausj_staging"
 
-    print("Welcome to the knausj-upgrade script!\n")
-    print(
-        "[bold yellow]If you run into any issues, please ask on the #upgrade-knausj "
-        "channel on the Talon slack workspace :smiling_face_with_smiling_eyes:[/bold yellow]\n"
-    )
+    print("[bold green]Welcome to the knausj-upgrade script![/bold green] :wave:\n")
+    print_slack_help_info("you run into any issues", True)
     print(f"Working in '{repo_path}'...\n")
     repo = Repo.init(repo_path)
 
