@@ -68,4 +68,6 @@ def main():
     if Confirm.ask(
         ":tada: [bold green]All done![/bold green] :tada:  Shall I push to your repo?"
     ):
-        repo.git.push()
+        repo.git.push(
+            mine_remote_main.remote_name, f"HEAD:{mine_remote_main.remote_head}"
+        )
