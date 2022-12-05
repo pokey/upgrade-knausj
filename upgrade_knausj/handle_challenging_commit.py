@@ -78,10 +78,7 @@ def perform_pre_commit_merge(
     if not sha.startswith("2877a68"):
         repo.git.checkout(commit, ".editorconfig")
 
-    repo.git.add(all=True)
-
-    if len(repo.index.entries) > 0:
-        repo.index.commit(message=f"Take pre-commit config from {short_name}")
+    add_and_commit_any_changes(repo, f"Take pre-commit config from {short_name}")
 
     if sha.startswith("3bf4882") or sha.startswith("446ec76"):
         pre_commit_config = Path(repo.working_tree_dir) / ".pre-commit-config.yaml"  # type: ignore
@@ -101,15 +98,14 @@ def perform_pre_commit_merge(
         with open(pre_commit_config, "w") as f:
             yaml.dump(config, f)
 
-        repo.git.add(all=True)
-
-        if len(repo.index.entries) > 0:
-            repo.index.commit(message=f"Modify pre-commit config to work around bugs")
+        add_and_commit_any_changes(repo, "Modify pre-commit config to work around bugs")
 
     print("Running pre-commit...")
     log_path = log_dir / f"pre-commit-{short_name}.txt"
     with cd(repo.working_tree_dir), open(log_path, "w") as out:
-        result = subprocess.run(["pre-commit", "run", "--all"], stdout=out, stderr=out)
+        result = subprocess.run(
+            ["pre-commit", "run", "--all", "--verbose"], stdout=out, stderr=out
+        )
 
     if result.returncode not in [0, 1]:
         print("")
@@ -125,19 +121,15 @@ def perform_pre_commit_merge(
         error_branch = repo.create_head(error_branch_name)
         error_branch.checkout()
         repo.delete_head(tmp_branch)
-        repo.git.add(all=True)
-        if len(repo.index.entries) > 0:
-            repo.index.commit(message="Failed attempt to run pre-commit")
+        add_and_commit_any_changes(repo, "Failed attempt to run pre-commit")
         sys.exit(result.returncode)
+
+    add_and_commit_any_changes(repo, "Run pre-commit")
 
     if sha.startswith("3bf4882") or sha.startswith("446ec76"):
         repo.git.restore(str(pre_commit_config))  # type: ignore
         repo.git.checkout(commit, ".pre-commit-config.yaml")
-
-    repo.git.add(all=True)
-
-    if len(repo.index.entries) > 0:
-        repo.index.commit(message="Run pre-commit")
+        add_and_commit_any_changes(repo, f"Reset pre-commit config to {short_name}")
 
     print("Initiating merge...")
     mine_main.checkout()
@@ -154,3 +146,10 @@ def perform_pre_commit_merge(
     )
     mine_main.commit = merge_commit
     mine_main.checkout(True)
+
+
+def add_and_commit_any_changes(repo: Repo, message: str):
+    repo.git.add(all=True)
+
+    if len(repo.index.entries) > 0:
+        repo.index.commit(message=message)
