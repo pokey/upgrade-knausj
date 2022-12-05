@@ -78,15 +78,20 @@ def perform_pre_commit_merge(
     if not sha.startswith("2877a68"):
         repo.git.checkout(commit, ".editorconfig")
 
+    repo.git.add(all=True)
+
+    if len(repo.index.entries) > 0:
+        repo.index.commit(message=f"Take pre-commit config from {short_name}")
+
     if sha.startswith("3bf4882") or sha.startswith("446ec76"):
         pre_commit_config = Path(repo.working_tree_dir) / ".pre-commit-config.yaml"  # type: ignore
         with open(pre_commit_config) as f:
             config = yaml.safe_load(f)
         if sha.startswith("3bf4882"):
-            # For some reason shed before 0.10.3 doesn't work anymore, so we just
+            # For some reason shed before 0.10.7 doesn't work anymore, so we just
             # force the newer version
-            print("Force shed version to 0.10.3 to work around bug...")
-            config["repos"][-1]["rev"] = "0.10.3"
+            print("Force shed version to 0.10.7 to work around bug...")
+            config["repos"][-1]["rev"] = "0.10.7"
         if sha.startswith("446ec76"):
             # Talonfmt before 1.8.1 had issues, so we just force the newer
             # version
@@ -95,6 +100,11 @@ def perform_pre_commit_merge(
             config["repos"][2:5] = []
         with open(pre_commit_config, "w") as f:
             yaml.dump(config, f)
+
+        repo.git.add(all=True)
+
+        if len(repo.index.entries) > 0:
+            repo.index.commit(message=f"Modify pre-commit config to work around bugs")
 
     print("Running pre-commit...")
     log_path = log_dir / f"pre-commit-{short_name}.txt"
