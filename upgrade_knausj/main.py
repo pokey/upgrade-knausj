@@ -57,7 +57,11 @@ def main():
 
     if not repo.is_ancestor(knausj_main.commit, repo.head.commit):
         print("Merging with 'knausj_main'...")
-        merge_exiting_on_conflict(repo, knausj_main.commit)
+        merge_exiting_on_conflict(
+            repo,
+            knausj_main.commit,
+            f"Merge my {mine_remote_main.remote_head} branch with knausj main branch",
+        )
 
     if mine_main.commit == mine_remote_main.commit:
         print(

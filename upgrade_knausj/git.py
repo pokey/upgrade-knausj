@@ -6,9 +6,9 @@ from rich import print
 from upgrade_knausj.util import print_slack_help_info
 
 
-def merge_exiting_on_conflict(repo: Repo, commit: Commit):
+def merge_exiting_on_conflict(repo: Repo, commit: Commit, message: str):
     try:
-        repo.git.merge(commit)
+        repo.git.merge(commit, m=message)
     except GitCommandError as err:
         print(err.stdout)
         print(

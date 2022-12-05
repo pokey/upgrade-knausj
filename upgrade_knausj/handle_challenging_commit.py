@@ -26,6 +26,9 @@ def handle_challenging_commit(
     short_name = sha[:7]
     commit = repo.commit(sha)
     parent = commit.parents[0]
+    main_remote_branch_name: str = (
+        mine_main.tracking_branch().remote_head  # pyright: ignore [reportOptionalMemberAccess]
+    )
 
     if repo.is_ancestor(commit, repo.head.commit):
         return
@@ -35,14 +38,23 @@ def handle_challenging_commit(
     )
 
     if not repo.is_ancestor(parent, repo.head.commit):
-        print(f"Merging with parent commit '{str(parent)[:7]}'")
-        merge_exiting_on_conflict(repo, parent)
+        parent_short_name = str(parent)[:7]
+        print(f"Merging with parent commit '{parent_short_name}'")
+        merge_exiting_on_conflict(
+            repo,
+            parent,
+            f"Merge my {main_remote_branch_name} branch with knausj {parent_short_name}",
+        )
 
     if challenging_commit.is_precommit:
         perform_pre_commit_merge(repo, log_dir, commit, mine_main)
     else:
         print(f"Merging with commit '{short_name}'")
-        merge_exiting_on_conflict(repo, commit)
+        merge_exiting_on_conflict(
+            repo,
+            commit,
+            f"Merge my {main_remote_branch_name} branch with knausj {short_name}",
+        )
 
 
 def perform_pre_commit_merge(
@@ -50,6 +62,9 @@ def perform_pre_commit_merge(
 ):
     sha = commit.hexsha
     short_name = sha[:7]
+    main_remote_branch_name: str = (
+        mine_main.tracking_branch().remote_head  # pyright: ignore [reportOptionalMemberAccess]
+    )
 
     # Handle pre-commit commits; we just run pre-commit ourselves instead of
     # actually doing a merge
@@ -124,7 +139,7 @@ def perform_pre_commit_merge(
     merge_commit = Commit.create_from_tree(
         repo,
         tmp_branch.commit.tree,
-        f"Merge my main with {short_name} by running pre-commit",
+        f"Merge my {main_remote_branch_name} branch with knausj {short_name} by running pre-commit",
         [mine_main.commit, commit],
     )
     mine_main.commit = merge_commit
