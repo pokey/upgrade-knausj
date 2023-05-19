@@ -1,6 +1,6 @@
 # Upgrade `knausj`
 
-Helper for performing `knausj` upgrades.
+Helper for performing `knausj` upgrades.  Please see https://youtu.be/Nbz7A9pGkQ0 for a detailed walkthrough of using this utility.
 
 ## Assumptions
 
