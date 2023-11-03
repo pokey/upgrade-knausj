@@ -8,9 +8,8 @@ from git.objects.commit import Commit
 from git.refs import Head
 from git.repo import Repo
 from rich import print
-
-from upgrade_knausj.git import merge_exiting_on_conflict
-from upgrade_knausj.util import cd, print_error, print_slack_help_info
+from upgrade_talon_community.git import merge_exiting_on_conflict
+from upgrade_talon_community.util import cd, print_error, print_slack_help_info
 
 
 @dataclass
@@ -44,7 +43,7 @@ def handle_challenging_commit(
         merge_exiting_on_conflict(
             repo,
             parent,
-            f"Merge my {main_remote_branch_name} branch with knausj {parent_short_name}",
+            f"Merge my {main_remote_branch_name} branch with community {parent_short_name}",
         )
 
     if challenging_commit.is_precommit:
@@ -56,7 +55,7 @@ def handle_challenging_commit(
         merge_exiting_on_conflict(
             repo,
             commit,
-            f"Merge my {main_remote_branch_name} branch with knausj {short_name}",
+            f"Merge my {main_remote_branch_name} branch with community {short_name}",
         )
 
 
@@ -141,14 +140,14 @@ def perform_pre_commit_merge(
     print("Initiating merge...")
     mine_main.checkout()
 
-    # Manually construct a merge commit, using `mine_main` and the knausj
+    # Manually construct a merge commit, using `mine_main` and the community
     # pre-commit commit as parents, and using the tree we constructed by running
-    # pre-commit on `mine_main` using the pre-commit config from the knausj
+    # pre-commit on `mine_main` using the pre-commit config from the community
     # pre-commit commit
     merge_commit = Commit.create_from_tree(
         repo,
         tmp_branch.commit.tree,
-        f"Merge my {main_remote_branch_name} branch with knausj {short_name} by running pre-commit",
+        f"Merge my {main_remote_branch_name} branch with community {short_name} by running pre-commit",
         [mine_main.commit, commit],
     )
     mine_main.commit = merge_commit
