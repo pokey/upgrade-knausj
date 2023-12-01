@@ -17,6 +17,7 @@ from upgrade_knausj.util import cd, print_error, print_slack_help_info
 class ChallengingCommit:
     sha: str
     is_precommit: bool
+    needs_patch: bool = False
 
 
 def handle_challenging_commit(
@@ -47,7 +48,9 @@ def handle_challenging_commit(
         )
 
     if challenging_commit.is_precommit:
-        perform_pre_commit_merge(repo, log_dir, commit, mine_main)
+        perform_pre_commit_merge(
+            repo, log_dir, commit, mine_main, challenging_commit.needs_patch
+        )
     else:
         print(f"Merging with commit '{short_name}'")
         merge_exiting_on_conflict(
@@ -58,7 +61,7 @@ def handle_challenging_commit(
 
 
 def perform_pre_commit_merge(
-    repo: Repo, log_dir: Path, commit: Commit, mine_main: Head
+    repo: Repo, log_dir: Path, commit: Commit, mine_main: Head, needs_patch: bool
 ):
     sha = commit.hexsha
     short_name = sha[:7]
@@ -80,7 +83,7 @@ def perform_pre_commit_merge(
 
     add_and_commit_any_changes(repo, f"Take pre-commit config from {short_name}")
 
-    if sha.startswith("3bf4882") or sha.startswith("446ec76"):
+    if needs_patch:
         pre_commit_config = Path(repo.working_tree_dir) / ".pre-commit-config.yaml"  # type: ignore
         with open(pre_commit_config) as f:
             config = yaml.safe_load(f)
@@ -94,6 +97,10 @@ def perform_pre_commit_merge(
             # version
             print("Force talonfmt version to 1.8.1 to work around bug...")
             config["repos"][-1]["rev"] = "1.8.1"
+        if sha.startswith("446ec76") or sha.startswith("4612817"):
+            print(
+                "Temporarily disable some formatters due to legacy ones having problems..."
+            )
             config["repos"][2:5] = []
         with open(pre_commit_config, "w") as f:
             yaml.dump(config, f)
@@ -126,7 +133,7 @@ def perform_pre_commit_merge(
 
     add_and_commit_any_changes(repo, "Run pre-commit")
 
-    if sha.startswith("3bf4882") or sha.startswith("446ec76"):
+    if needs_patch:
         repo.git.restore(str(pre_commit_config))  # type: ignore
         repo.git.checkout(commit, ".pre-commit-config.yaml")
         add_and_commit_any_changes(repo, f"Reset pre-commit config to {short_name}")

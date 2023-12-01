@@ -18,11 +18,24 @@ app = typer.Typer()
 repo_base_path = Path.home() / "knausj_staging"
 
 challenging_commits = [
-    ChallengingCommit("2877a6849d75e5fa78c9453991a9235b4f6d9dcf", True),
-    ChallengingCommit("3bf4882fa0a05b22171e59118bd7c9640aae753a", True),
-    ChallengingCommit("c8ae6f87acde5d433df25a17a4d203186f9fe319", False),
-    ChallengingCommit("446ec764c9caa98973eacd7f792b6a087a1b635f", True),
-    ChallengingCommit("b25bac46c6543d0ec5fe2b2d09596444cd903371", False),
+    ChallengingCommit("2877a6849d75e5fa78c9453991a9235b4f6d9dcf", is_precommit=True),
+    ChallengingCommit(
+        "3bf4882fa0a05b22171e59118bd7c9640aae753a", is_precommit=True, needs_patch=True
+    ),
+    ChallengingCommit(
+        "c8ae6f87acde5d433df25a17a4d203186f9fe319",
+        is_precommit=False,
+    ),
+    ChallengingCommit(
+        "446ec764c9caa98973eacd7f792b6a087a1b635f", is_precommit=True, needs_patch=True
+    ),
+    ChallengingCommit(
+        "b25bac46c6543d0ec5fe2b2d09596444cd903371",
+        is_precommit=False,
+    ),
+    ChallengingCommit(
+        "4612817a0281ffdc698ba496d5a0530011bb5449", is_precommit=True, needs_patch=True
+    ),
 ]
 
 
