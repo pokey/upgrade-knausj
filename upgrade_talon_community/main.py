@@ -5,17 +5,17 @@ from git.repo import Repo
 from rich import print
 from rich.prompt import Confirm
 
-from upgrade_knausj.git import merge_exiting_on_conflict
-from upgrade_knausj.handle_challenging_commit import (
+from upgrade_talon_community.git import merge_exiting_on_conflict
+from upgrade_talon_community.handle_challenging_commit import (
     ChallengingCommit,
     handle_challenging_commit,
 )
-from upgrade_knausj.setup import setup_knausj, setup_mine
-from upgrade_knausj.util import error_and_exit, print_slack_help_info
+from upgrade_talon_community.setup import setup_community, setup_mine
+from upgrade_talon_community.util import error_and_exit, print_slack_help_info
 
 app = typer.Typer()
 
-repo_base_path = Path.home() / "knausj_staging"
+repo_base_path = Path.home() / "talon_community_staging"
 
 challenging_commits = [
     ChallengingCommit("2877a6849d75e5fa78c9453991a9235b4f6d9dcf", is_precommit=True),
@@ -42,15 +42,17 @@ challenging_commits = [
 @app.command()
 def main():
     """
-    Upgrade knausj
+    Upgrade your fork of the Talon community repository
     """
 
     repo_base_path.mkdir(parents=True, exist_ok=True)
     log_dir = repo_base_path / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
-    repo_path = repo_base_path / "knausj_staging"
+    repo_path = repo_base_path / "talon_community_staging"
 
-    print("[bold green]Welcome to the upgrade-knausj script![/bold green] :wave:\n")
+    print(
+        "[bold green]Welcome to the upgrade-talon-community script![/bold green] :wave:\n"
+    )
     print_slack_help_info("you run into any issues", True)
     print(f"Working in '{repo_path}'...\n")
     repo = Repo.init(repo_path)
@@ -61,19 +63,19 @@ def main():
         )
 
     mine_main, mine_remote_main = setup_mine(repo)
-    knausj_main = setup_knausj(repo)
+    community_main = setup_community(repo)
 
     mine_main.checkout(True)
 
     for challenging_commit in challenging_commits:
         handle_challenging_commit(repo, log_dir, challenging_commit, mine_main)
 
-    if not repo.is_ancestor(knausj_main.commit, repo.head.commit):
-        print("Merging with 'knausj_main'...")
+    if not repo.is_ancestor(community_main.commit, repo.head.commit):
+        print("Merging with 'community_main'...")
         merge_exiting_on_conflict(
             repo,
-            knausj_main.commit,
-            f"Merge my {mine_remote_main.remote_head} branch with knausj main branch",
+            community_main.commit,
+            f"Merge my {mine_remote_main.remote_head} branch with community main branch",
         )
 
     if mine_main.commit == mine_remote_main.commit:

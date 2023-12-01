@@ -1,15 +1,15 @@
-# `upgrade-knausj`
+# `upgrade-talon-community`
 
-Upgrade knausj
+Upgrade community
 
 **Usage**:
 
 ```console
-$ upgrade-knausj [OPTIONS]
+$ upgrade-talon-community [OPTIONS]
 ```
 
 **Options**:
 
-* `--install-completion`: Install completion for the current shell.
-* `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
-* `--help`: Show this message and exit.
+- `--install-completion`: Install completion for the current shell.
+- `--show-completion`: Show completion for the current shell, to copy it or customize the installation.
+- `--help`: Show this message and exit.

@@ -4,11 +4,11 @@ from rich import print
 from rich.prompt import Prompt
 
 # FIXME: Support ssh url
-knausj_uri = "https://github.com/knausj85/knausj_talon.git"
+community_uri = "https://github.com/talonhub/community.git"
 mine_remote_name = "mine"
-knausj_remote_name = "knausj"
+community_remote_name = "community"
 mine_main_local_name = "mine_main"
-knausj_main_local_name = "knausj_main"
+community_main_local_name = "community_main"
 
 
 def setup_mine(repo: Repo):
@@ -30,7 +30,7 @@ def setup_mine(repo: Repo):
 
 def setup_mine_remote(repo: Repo) -> Remote:
     if mine_remote_name not in repo.remotes:
-        remote_uri = Prompt.ask("Enter the git URI for your fork of knausj")
+        remote_uri = Prompt.ask("Enter the git URI for your fork of community")
         mine = repo.create_remote(mine_remote_name, remote_uri)
         print(f"\nCreated remote '{mine.name}' for '{remote_uri}'")
     else:
@@ -74,28 +74,32 @@ def setup_mine_main_branch(repo: Repo, mine: Remote):
     return mine_main, mine_remote_main
 
 
-def setup_knausj(repo: Repo):
-    if knausj_remote_name not in repo.remotes:
-        knausj = repo.create_remote(knausj_remote_name, knausj_uri)
-        print(f"\nCreated remote '{knausj.name}' for '{knausj_uri}'")
+def setup_community(repo: Repo):
+    if community_remote_name not in repo.remotes:
+        community = repo.create_remote(community_remote_name, community_uri)
+        print(f"\nCreated remote '{community.name}' for '{community_uri}'")
     else:
-        knausj = repo.remotes.knausj
+        community = repo.remotes.community
 
-    knausj.fetch()
+    community.fetch()
 
-    knausj_remote_main = knausj.refs.main
+    community_remote_main = community.refs.main
 
-    if knausj_main_local_name not in repo.heads:
-        knausj_main = repo.create_head(knausj_main_local_name, knausj_remote_main)
-        print(f"Created branch '{knausj_main.name}' to track '{knausj.name}:main'")
-        knausj_main.set_tracking_branch(knausj_remote_main)
+    if community_main_local_name not in repo.heads:
+        community_main = repo.create_head(
+            community_main_local_name, community_remote_main
+        )
+        print(
+            f"Created branch '{community_main.name}' to track '{community.name}:main'"
+        )
+        community_main.set_tracking_branch(community_remote_main)
     else:
-        knausj_main = repo.heads.knausj_main
+        community_main = repo.heads.community_main
 
-        if knausj_main.commit != knausj_remote_main.commit and repo.is_ancestor(
-            knausj_main.commit, knausj_remote_main.commit
+        if community_main.commit != community_remote_main.commit and repo.is_ancestor(
+            community_main.commit, community_remote_main.commit
         ):
-            print(f"Local branch '{knausj_main}' is outdated; updating...")
-            knausj_main.commit = knausj_remote_main.commit
+            print(f"Local branch '{community_main}' is outdated; updating...")
+            community_main.commit = community_remote_main.commit
 
-    return knausj_main
+    return community_main

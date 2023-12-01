@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "upgrade-knausj"
+name = "upgrade-talon-community"
 version = "0.3.15"
 description = ""
 authors = ["Pokey Rule <755842+pokey@users.noreply.github.com>"]
 readme = "README.md"
-packages = [{ include = "upgrade_knausj" }]
+packages = [{ include = "upgrade_talon_community" }]
 
 
 [tool.poetry.scripts]
-upgrade-knausj = "upgrade_knausj.main:app"
+upgrade-talon-community = "upgrade_talon_community.main:app"
 
 [tool.poetry.dependencies]
 python = "^3.10"
